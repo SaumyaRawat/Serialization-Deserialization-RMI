@@ -121,7 +121,7 @@ public class Client_201401110
         return(jsonString);
     }
 
-    public static void serialize_protobuf( List<Student_class> students ) throws RemoteException {
+    public static byte[] serialize_protobuf( List<Student_class> students ) throws RemoteException {
             // creating the employee
         Result.Builder resbuild = ResultProto.Result.newBuilder();
         for(Student_class s: students){
@@ -137,19 +137,23 @@ public class Client_201401110
             resbuild.addStudent(student);
         }
         Result result = resbuild.build();
- 
-     try {
-        // write
+        byte[] serialized_content = new byte[0];
+        try {
+            serialized_content = result.toByteArray();
+        /* write
         FileOutputStream output = new FileOutputStream("Result.txt");
         result.writeTo(output);
         output.close();
- 
+        
+
         // read
         Result resFromFile = Result.parseFrom(new FileInputStream("Result.txt"));
         System.out.println(resFromFile);
-     } catch (IOException e) {
-             e.printStackTrace();
-     }
+        */
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return(serialized_content);
     }
 
     public static void main(String args[])
@@ -195,13 +199,13 @@ public class Client_201401110
 							break;
 
                         case 2:
-                            serialize_protobuf(students);
-                            //serialized_content = serialize_protobuf(students);
+                            byte[] serialized_content_protobuf = serialize_protobuf(students);
+                            res = intf.deserialize_protobuf(serialized_content_protobuf);
                             break;
 
                         default:
-                            System.out.println("Entered option does not exist!");
-                            break;
+                            System.out.println("Exit!");
+                            return;
                     }
                 }
             }

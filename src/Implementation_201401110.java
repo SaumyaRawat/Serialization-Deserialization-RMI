@@ -14,21 +14,26 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-import com.google.gson.Gson;  
+import com.google.gson.Gson;
+import src.ResultProto.Result;
+import src.ResultProto.Student;
+import src.ResultProto.CourseMarks;
+
 
 public class Implementation_201401110 extends UnicastRemoteObject implements Interface_201401110
 {
-    PrintWriter writer;
+    PrintWriter json_writer;
+    PrintWriter protobuf_writer;
 
-	public static class Student  implements java.io.Serializable{
+	public static class Student_class  implements java.io.Serializable{
 		private String Name; 
-		List<courses> CourseMarks;  
+		List<courses> Coursemarks;  
 		private String RollNo;
 
-		public Student(final String Name,final List<courses> CourseMarks, final String RollNo){
+		public Student_class(final String Name,final List<courses> Coursemarks, final String RollNo){
 			super();
 			this.Name = Name;
-			this.CourseMarks = CourseMarks;
+			this.Coursemarks = Coursemarks;
 			this.RollNo = RollNo;
 		}
 
@@ -38,9 +43,9 @@ public class Implementation_201401110 extends UnicastRemoteObject implements Int
 		public String getRollNo() { 
 			return RollNo; 
 		}
-        public List<courses> getCourseMarks()
+        public List<courses> getCoursemarks()
         {
-            return CourseMarks;
+            return Coursemarks;
         }
 
 	}
@@ -56,7 +61,7 @@ public class Implementation_201401110 extends UnicastRemoteObject implements Int
         public String getCourseName(){
             return CourseName;
         }
-        public int getCourseMarks(){
+        public int getCoursemarks(){
             return CourseScore;
         }
     }
@@ -64,38 +69,68 @@ public class Implementation_201401110 extends UnicastRemoteObject implements Int
     public  Implementation_201401110() throws RemoteException{
         //this.students = new ArrayList<>();
         try {
-            this.writer = new PrintWriter("json_output.txt", "UTF-8");
+            this.json_writer = new PrintWriter("json_output.txt", "UTF-8");
+            this.protobuf_writer = new PrintWriter("protobuf_output.txt", "UTF-8");
         } catch(Exception e) {}
     }
 
     public int deserialize_json(String serialized_content)  throws RemoteException{
         Gson gson = new Gson();        
-        Student[] students = gson.fromJson(serialized_content, Student[].class);
-        for(Student s: students){
-            List<courses> courses = s.getCourseMarks();
+        Student_class[] students = gson.fromJson(serialized_content, Student_class[].class);
+        for(Student_class s: students){
+            List<courses> courses = s.getCoursemarks();
             String line = s.getName()+","+s.getRollNo()+":";
             int start = 0;
             System.out.print(line);
-            this.writer.print(line);
+            this.json_writer.print(line);
             for( courses c: courses){
                 if(start==0){
-                    line = c.getCourseName()+","+c.getCourseMarks();
+                    line = c.getCourseName()+","+c.getCoursemarks();
                     start = 1;
                 }
                 else {
-                    line = ":"+c.getCourseName()+","+c.getCourseMarks();
+                    line = ":"+c.getCourseName()+","+c.getCoursemarks();
                 }
                 System.out.print(line);
-                this.writer.print(line);                
+                this.json_writer.print(line);                
             }
-            this.writer.print("\n");
+            this.json_writer.print("\n");
         } 
 
         //System.out.println(studentContainer.toString());
-        this.writer.close();
+        this.json_writer.close();
         return(1);
 
     }
+
+        public int deserialize_protobuf(byte[] serialized_content_protobuf)  throws RemoteException{
+            try {
+                Result R = Result.parseFrom(serialized_content_protobuf);
+                List<Student> S = R.getStudentList();
+                for(Student s: S){
+                    String line = s.getName()+","+s.getRollNum()+":";
+                    int start = 0;
+                    System.out.print(line);
+                    this.protobuf_writer.print(line);
+                    List<CourseMarks> courses = s.getMarksList();
+                    for(CourseMarks c:courses){
+                        if(start==0){
+                            line = c.getName()+","+c.getScore();
+                            start = 1;
+                        }
+                        else {
+                            line = ":"+c.getName()+","+c.getScore();
+                        }
+                        //System.out.print(line);
+                        this.protobuf_writer.print(line);                
+                    }
+                this.protobuf_writer.print("\n");
+                } 
+                //System.out.println(studentContainer.toString());
+                this.protobuf_writer.close();
+            } catch( Exception e){}
+            return(1);
+        }
 }
 
 

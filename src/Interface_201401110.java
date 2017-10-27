@@ -15,6 +15,7 @@ import com.google.gson.Gson;
 
 public interface Interface_201401110 extends Remote
 {
-    public int deserialize_json(String content) throws RemoteException;
+    public int deserialize_json(String serialized_content) throws RemoteException;
+    public int deserialize_protobuf(byte[] serialized_content_protobuf) throws RemoteException;
 }
 

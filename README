@@ -2,3 +2,12 @@ To Compile from scratch:
 
 1. Create proto class from .proto file
 protoc --proto_path ../Result.proto ./ Result.proto
+
+2. Compile all java files, go to src
+cd src/
+javac -cp ".:jar_files/*" *.java
+
+3. Run Server and Client from Q1 directory on different terminals
+cd ..
+java -cp ".:src/jar_files/*" src.Server_201401110
+java -cp ".:src/jar_files/*" src.Client_201401110
