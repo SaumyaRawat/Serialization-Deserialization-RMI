@@ -1,4 +1,4 @@
-package Q1;
+package src;
 
 import java.rmi.*;
 import java.rmi.server.*;

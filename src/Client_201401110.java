@@ -1,4 +1,4 @@
-package Q1;
+package src;
 
 import java.io.*;
 import java.rmi.*;
@@ -17,9 +17,9 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import com.google.gson.Gson;  
-import Q1.ResultProto.Result;
-import Q1.ResultProto.Student;
-import Q1.ResultProto.CourseMarks;
+import src.ResultProto.Result;
+import src.ResultProto.Student;
+import src.ResultProto.CourseMarks;
 //import A.ResultProto.Result.Builder;
 //import A.ResultProto.Student.Builder;
 
