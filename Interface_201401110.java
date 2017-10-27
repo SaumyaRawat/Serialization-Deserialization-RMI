@@ -13,6 +13,6 @@ import com.google.gson.Gson;
 
 public interface Interface_201401110 extends Remote
 {
-    public int serialize_json(String content) throws RemoteException;
+    public int deserialize_json(String content) throws RemoteException;
 }
 

@@ -17,7 +17,6 @@ import com.google.gson.Gson;
 public class Implementation_201401110 extends UnicastRemoteObject implements Interface_201401110
 {
     PrintWriter writer;
-    List<Student> students;
 
 	public static class Student  implements java.io.Serializable{
 		private String Name; 
@@ -37,6 +36,11 @@ public class Implementation_201401110 extends UnicastRemoteObject implements Int
 		public String getRollNo() { 
 			return RollNo; 
 		}
+        public List<courses> getCourseMarks()
+        {
+            return CourseMarks;
+        }
+
 	}
 
 	public static class courses implements java.io.Serializable{
@@ -47,65 +51,45 @@ public class Implementation_201401110 extends UnicastRemoteObject implements Int
             this.CourseScore = CourseScore;
             this.CourseName = CourseName;
         }
+        public String getCourseName(){
+            return CourseName;
+        }
+        public int getCourseMarks(){
+            return CourseScore;
+        }
     }
 
     public  Implementation_201401110() throws RemoteException{
-        this.students = new ArrayList<>();
+        //this.students = new ArrayList<>();
         try {
-            this.writer = new PrintWriter("json_output.json", "UTF-8");
+            this.writer = new PrintWriter("json_output.txt", "UTF-8");
         } catch(Exception e) {}
     }
 
-    public int deserialize_json(String content)  throws RemoteException{
-        StringTokenizer st = new StringTokenizer(content);
-        int count, flag = 0, done = 0;
-        String name="";
-        String roll_no="";        
-        List<courses> CourseMarks = new ArrayList<>();  
-        // for each line in input.txt
-        while (st.hasMoreTokens()) {
-            CourseMarks = new ArrayList<>();
-            String line_one = st.nextToken(";");
-            StringTokenizer st1 = new StringTokenizer(line_one);
-            // for each entry in each line (3 entries in total)
-            flag = 0;
-            name = "";
-            roll_no = "";
-            while(st1.hasMoreTokens()){
-
-                String entry = st1.nextToken(":");
-                    // for each course
-                    StringTokenizer st2 = new StringTokenizer(entry);
-                    String coursename = "";
-                    while(st2.hasMoreTokens()){
-                        int marks = 0;
-                        String course_string = st2.nextToken(",");
-                        if(flag==0) {
-                            if(course_string.matches("[A-Z]+")) {
-                                name = course_string;
-                            }
-                            else if(course_string.matches("[0-9]+")) {
-                                roll_no = course_string;
-                                flag = 1;
-                            }
-                        }
-                        else if(flag==1){
-                             if(course_string.matches("[0-9]+")){
-                                    marks = Integer.parseInt(course_string);
-                                    CourseMarks.add(new courses(marks,coursename));  
-                             }
-                             else {
-                                coursename = course_string;
-                            }
-                        }
-                    }
+    public int deserialize_json(String serialized_content)  throws RemoteException{
+        Gson gson = new Gson();        
+        Student[] students = gson.fromJson(serialized_content, Student[].class);
+        for(Student s: students){
+            List<courses> courses = s.getCourseMarks();
+            String line = s.getName()+","+s.getRollNo()+":";
+            int start = 0;
+            System.out.print(line);
+            this.writer.print(line);
+            for( courses c: courses){
+                if(start==0){
+                    line = c.getCourseName()+","+c.getCourseMarks();
+                    start = 1;
                 }
-            this.students.add(new Student(name,CourseMarks,roll_no));
-        }
-        Gson gson = new Gson(); 
-        String jsonString = gson.toJson(this.students); 
-        System.out.println(jsonString);
-        this.writer.println(jsonString);
+                else {
+                    line = ":"+c.getCourseName()+","+c.getCourseMarks();
+                }
+                System.out.print(line);
+                this.writer.print(line);                
+            }
+            this.writer.print("\n");
+        } 
+
+        //System.out.println(studentContainer.toString());
         this.writer.close();
         return(1);
 
