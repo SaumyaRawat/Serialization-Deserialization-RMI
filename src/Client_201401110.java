@@ -1,3 +1,5 @@
+package Q1;
+
 import java.io.*;
 import java.rmi.*;
 import java.net.*;
@@ -15,16 +17,21 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 import com.google.gson.Gson;  
+import Q1.ResultProto.Result;
+import Q1.ResultProto.Student;
+import Q1.ResultProto.CourseMarks;
+//import A.ResultProto.Result.Builder;
+//import A.ResultProto.Student.Builder;
 
 
 public class Client_201401110
 {
-    public static class Student  implements java.io.Serializable{
+    public static class Student_class  implements java.io.Serializable{
         private String Name; 
         List<courses> CourseMarks;  
         private String RollNo;
 
-        public Student(final String Name,final List<courses> CourseMarks, final String RollNo){
+        public Student_class(final String Name,final List<courses> CourseMarks, final String RollNo){
             super();
             this.Name = Name;
             this.CourseMarks = CourseMarks;
@@ -37,6 +44,9 @@ public class Client_201401110
         public String getRollNo() { 
             return RollNo; 
         }
+        public List<courses> getCourseMarks(){
+            return CourseMarks;
+        }
     }
 
     public static class courses implements java.io.Serializable{
@@ -47,11 +57,16 @@ public class Client_201401110
             this.CourseScore = CourseScore;
             this.CourseName = CourseName;
         }
+        public String getCourseName(){
+            return CourseName;
+        }
+        public int getCourseScore(){
+            return CourseScore;
+        }
     }
 
-
-    public static String serialize_json(String content)  throws RemoteException {
-        List<Student> students = new ArrayList<>();
+    public static List<Student_class> create_object(String content) throws RemoteException {
+        List<Student_class> students = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(content);
         int count, flag = 0, done = 0;
         String name="";
@@ -95,11 +110,46 @@ public class Client_201401110
                         }
                     }
                 }
-            students.add(new Student(name,CourseMarks,roll_no));
+            students.add(new Student_class(name,CourseMarks,roll_no));
         }
+        return(students);
+    }
+
+    public static String serialize_json( List<Student_class> students )  throws RemoteException {
         Gson gson = new Gson(); 
         String jsonString = gson.toJson(students); 
         return(jsonString);
+    }
+
+    public static void serialize_protobuf( List<Student_class> students ) throws RemoteException {
+            // creating the employee
+        Result.Builder resbuild = ResultProto.Result.newBuilder();
+        for(Student_class s: students){
+            List<courses> courselist = s.getCourseMarks();
+            Student.Builder student_build = ResultProto.Student.newBuilder();
+            student_build.setName(s.getName());
+            student_build.setRollNum(Integer.parseInt(s.getRollNo()));
+            for (courses c: courselist){
+              CourseMarks c1 = ResultProto.CourseMarks.newBuilder().setName(c.getCourseName()).setScore(c.getCourseScore()).build();
+              student_build.addMarks(c1);
+            }
+            Student student = student_build.build();
+            resbuild.addStudent(student);
+        }
+        Result result = resbuild.build();
+ 
+     try {
+        // write
+        FileOutputStream output = new FileOutputStream("Result.txt");
+        result.writeTo(output);
+        output.close();
+ 
+        // read
+        Result resFromFile = Result.parseFrom(new FileInputStream("Result.txt"));
+        System.out.println(resFromFile);
+     } catch (IOException e) {
+             e.printStackTrace();
+     }
     }
 
     public static void main(String args[])
@@ -135,14 +185,18 @@ public class Client_201401110
                     System.out.println("Enter 1 for json and 2 for protobuf: ");
                     Scanner s=new Scanner(System.in);
                    	choice=Integer.parseInt(s.next());
+                    
+                    List<Student_class> students = create_object(content); 
                     switch(choice){
                         case 1:
-                            serialized_content = serialize_json(content);
+                            serialized_content = serialize_json(students);
                             //System.out.println(serialized_content);
                             res = intf.deserialize_json(serialized_content);
 							break;
 
                         case 2:
+                            serialize_protobuf(students);
+                            //serialized_content = serialize_protobuf(students);
                             break;
 
                         default:

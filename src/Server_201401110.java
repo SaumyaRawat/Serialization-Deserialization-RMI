@@ -1,3 +1,5 @@
+package Q1;
+
 import java.rmi.*;
 import java.net.*;
 import java.rmi.registry.LocateRegistry;
